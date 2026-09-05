@@ -411,7 +411,10 @@
         "stroke": "#ffcc00",
         "stroke-width": 1
       },
-      "labelStyle": {}
+      "labelStyle": {},
+      "icon": {
+        "path": "M0,-4 L4,0 L0,4 L-4,0 Z"
+      }
     },
     {
       "id": "landmark",
@@ -424,7 +427,10 @@
         "stroke": "#ff4488",
         "stroke-width": 1
       },
-      "labelStyle": {}
+      "labelStyle": {},
+      "icon": {
+        "path": "M-3,-4 L3,-4 L0,4 Z"
+      }
     },
     {
       "id": "tree",
@@ -437,7 +443,90 @@
         "stroke": "#33bb55",
         "stroke-width": 1
       },
-      "labelStyle": {}
+      "labelStyle": {},
+      "icon": {
+        "path": "M0,-4 L4,4 L-4,4 Z"
+      }
+    },
+    {
+      "id": "transit-stop",
+      "label": "Transit Stop",
+      "allowedTools": [
+        "point"
+      ],
+      "style": {
+        "fill": "#00aaff",
+        "stroke": "#00aaff",
+        "stroke-width": 1
+      },
+      "labelStyle": {},
+      "icon": {
+        "path": "M-4,-4 L4,-4 L4,4 L-4,4 Z"
+      }
+    },
+    {
+      "id": "healthcare-point",
+      "label": "Healthcare",
+      "allowedTools": [
+        "point"
+      ],
+      "style": {
+        "fill": "#ff4488",
+        "stroke": "#ff4488",
+        "stroke-width": 1
+      },
+      "labelStyle": {},
+      "icon": {
+        "path": "M-1.5,-4 L1.5,-4 L1.5,-1.5 L4,-1.5 L4,1.5 L1.5,1.5 L1.5,4 L-1.5,4 L-1.5,1.5 L-4,1.5 L-4,-1.5 L-1.5,-1.5 Z"
+      }
+    },
+    {
+      "id": "intersection",
+      "label": "Intersection",
+      "allowedTools": [
+        "point"
+      ],
+      "style": {
+        "fill": "#888888",
+        "stroke": "#888888",
+        "stroke-width": 1
+      },
+      "labelStyle": {},
+      "icon": {
+        "path": "M-4,-4 L4,-4 L4,-1.5 L1.5,-1.5 L1.5,4 L-1.5,4 L-1.5,-1.5 L-4,-1.5 Z"
+      }
+    },
+    {
+      "id": "utility-site",
+      "label": "Utility Site",
+      "allowedTools": [
+        "point"
+      ],
+      "style": {
+        "fill": "#cc9900",
+        "stroke": "#cc9900",
+        "stroke-width": 1
+      },
+      "labelStyle": {},
+      "icon": {
+        "path": "M4,0 L2,3.46 L-2,3.46 L-4,0 L-2,-3.46 L2,-3.46 Z"
+      }
+    },
+    {
+      "id": "parking",
+      "label": "Parking",
+      "allowedTools": [
+        "point"
+      ],
+      "style": {
+        "fill": "#0066cc",
+        "stroke": "#0066cc",
+        "stroke-width": 1
+      },
+      "labelStyle": {},
+      "icon": {
+        "path": "M-2.5,-4 L0.5,-4 A3,2 0 0 1 0.5,0 L0.5,4 L-2.5,4 Z M-0.4,-2 A1.1,1.1 0 1,0 1.8,-2 A1.1,1.1 0 1,0 -0.4,-2 Z"
+      }
     },
     {
       "id": "annotations",

@@ -8,5 +8,14 @@ namespace Skyplan.Models.dto {
 		public string Label { get; set; }
 		[JsonProperty("style")]
 		public Dictionary<string, string> Style { get; set; }
+		[JsonProperty("icon")]
+		public LayerIconDto? Icon { get; set; }
+	}
+
+	public class LayerIconDto {
+		[JsonProperty("path")]
+		public string Path { get; set; }
+		[JsonProperty("color")]
+		public string? Color { get; set; }
 	}
 }

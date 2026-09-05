@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {trigger} from 'cs2/api';
-import {ToolId, ShapeData, Tag, LayerDef, LabelStyle} from '../types';
+import {ToolId, ShapeData, Tag, LayerDef, LayerIcon, LabelStyle} from '../types';
 import {buildPath, buildPolygon, buildCurve, centroid} from 'mods/utils/buildSvg';
 import {useSkyplan} from '../SkyplanContext';
 import {useDrawingContext} from 'mods/DrawingContext';
@@ -39,7 +39,7 @@ function labelPosition(s: ShapeData): { x: number; y: number } | null {
 	return null;
 }
 
-function renderShape(s: ShapeData, opacity?: string): React.ReactElement | null {
+function renderShape(s: ShapeData, icon: LayerIcon | undefined, opacity?: string): React.ReactElement | null {
 	const cn = `sp-${s.layerId}`;
 	const style = opacity !== undefined ? { opacity } : undefined;
 
@@ -65,7 +65,19 @@ function renderShape(s: ShapeData, opacity?: string): React.ReactElement | null 
 		}
 		case Tag.circle: {
 			const p = s.pts[0];
-			return <circle key={s.id} className={cn} cx={p.x} cy={p.y} r={6} style={style} />;
+			if (!icon) return <circle key={s.id} className={cn} cx={p.x} cy={p.y} r={6} style={style} />;
+			// Icon paths are authored against a r=6 baseline circle - scale them with whatever
+			// radius the icon-carrying circle actually uses so the two stay proportional.
+			const POINT_RADIUS_WITH_ICON = 10;
+			const iconScale = POINT_RADIUS_WITH_ICON / 6;
+			return (
+				<React.Fragment key={s.id}>
+					<circle className={cn} cx={p.x} cy={p.y} r={POINT_RADIUS_WITH_ICON} style={style} />
+					<g transform={`translate(${p.x},${p.y}) scale(${iconScale})`} style={style}>
+						<path d={icon.path} fill={icon.color ?? 'black'} fillRule="evenodd" />
+					</g>
+				</React.Fragment>
+			);
 		}
 		case Tag.text: {
 			const p = s.pts[0];
@@ -122,7 +134,11 @@ const DrawingCanvas: React.FC = () => {
 				setCursorPos(null);
 			}
 		};
-		const onLeave = () => setCursorPos(null);
+		const onLeave = () => {
+			setCursorPos(null);
+			trigger('skyplan', 'clearIndicator', '');
+			trigger('skyplan', 'clearErase', '');
+		};
 		document.addEventListener('mousemove', onMove, true);
 		document.addEventListener('mouseleave', onLeave, true);
 		return () => {
@@ -217,6 +233,14 @@ const DrawingCanvas: React.FC = () => {
 		const mm = (e: MouseEvent) => {
 			if (viewModeRef.current) return;
 			if (e.buttons & 2) return;
+			// Cursor is over our own UI (toolbar etc), not the map - any stale hover feedback
+			// (erase highlight, snap indicator) needs clearing, or it sticks until a real canvas
+			// hover happens to land on nothing.
+			if ((e.target as Element).closest('[data-skyplan-ui]')) {
+				trigger('skyplan', 'clearIndicator', '');
+				trigger('skyplan', 'clearErase', '');
+				return;
+			}
 			if (onMove(e.clientX, e.clientY, 'mouse')) {
 				e.stopImmediatePropagation();
 				e.preventDefault();
@@ -242,6 +266,11 @@ const DrawingCanvas: React.FC = () => {
 		const pm = (e: PointerEvent) => {
 			if (viewModeRef.current) return;
 			if (e.buttons & 2) return;
+			if ((e.target as Element).closest('[data-skyplan-ui]')) {
+				trigger('skyplan', 'clearIndicator', '');
+				trigger('skyplan', 'clearErase', '');
+				return;
+			}
 			if (onMove(e.clientX, e.clientY, 'pointer')) {
 				e.stopImmediatePropagation();
 				e.preventDefault();
@@ -325,7 +354,7 @@ const DrawingCanvas: React.FC = () => {
 				const descOpacity = ls.opacity * 0.7;
 				return (
 				  <g key={layerId} display={layerVisible[layerId] === false ? 'none' : undefined} opacity={layerOpacities[layerId] ?? 1}>
-					{layerShapes.map(s => renderShape(s, hasHighlight ? (s.id === highlightId ? '1' : '0.3') : undefined))}
+					{layerShapes.map(s => renderShape(s, layerDefsMap[layerId]?.icon, hasHighlight ? (s.id === highlightId ? '1' : '0.3') : undefined))}
 					{layerLabels[layerId] && layerShapes.map(s => {
 						if (s.tag === Tag.text) return null;
 						if (!s.label) return null;
@@ -377,7 +406,7 @@ const DrawingCanvas: React.FC = () => {
 				  </g>
 				);
 			})}
-			{preview && renderShape(preview)}
+			{preview && renderShape(preview, layerDefsMap[preview.layerId]?.icon)}
 			<circle
 				cx={shownIndicator.x} cy={shownIndicator.y}
 				r={shownIndicator.kind === 'vertex' ? 6 : 5}
