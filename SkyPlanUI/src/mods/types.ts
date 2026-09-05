@@ -57,12 +57,18 @@ export interface LabelStyle {
 	opacity?: number;
 }
 
+export interface LayerIcon {
+	path: string;
+	color?: string;
+}
+
 export interface LayerDef {
 	id: string;
 	label: string;
 	allowedTools: ToolId[];
 	style: Record<string, string | number>;
 	labelStyle?: LabelStyle;
+	icon?: LayerIcon;
 }
 
 export enum Tag {

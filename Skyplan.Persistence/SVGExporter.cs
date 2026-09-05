@@ -62,11 +62,23 @@ namespace Skyplan.Persistence {
 			       $"{Meta(s)} style=\"{BuildStyle(s)}\"/>";
 		}
 
+		// Icon is authored in screen-space pixels (fixed visual size regardless of zoom) - the
+		// export has no camera/zoom, so it needs a fixed world-unit size instead. Reuses the same
+		// ratio the point marker already established: r=6 (screen px, in-game) -> r=100 (world
+		// units, exported), so the icon stays proportioned to the circle the same way in both.
+		private const float IconWorldScale = 100f / 6f;
+
 		private static string ExportCircle(Shape s) {
 			Vector3 p = s.pts[0];
-			return $"<circle cx=\"{F(p.x)}\" cy=\"{F(p.z)}\" r=\"100\"" +
+			string circle = $"<circle cx=\"{F(p.x)}\" cy=\"{F(p.z)}\" r=\"100\"" +
 			       $" data-layer=\"{s.layer?.Id}\" data-y=\"{F(p.y)}\"" +
 			       $"{Meta(s)} style=\"{BuildStyle(s)}\"/>";
+			if (s.layer?.Icon == null) return circle;
+			string color = Esc(s.layer.Icon.Color ?? "black");
+			string icon = $"<path d=\"{s.layer.Icon.Path}\" data-icon-glyph=\"true\"" +
+			       $" transform=\"translate({F(p.x)},{F(p.z)}) scale({F(IconWorldScale)})\"" +
+			       $" fill=\"{color}\"/>";
+			return $"<g>{circle}{icon}</g>";
 		}
 
 		private static string ExportText(Shape s) {

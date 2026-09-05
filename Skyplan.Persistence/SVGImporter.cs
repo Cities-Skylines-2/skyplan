@@ -15,6 +15,7 @@ namespace Skyplan.Persistence {
 			XElement root = doc.Root;
 
 			foreach (XElement el in Descendants(root, "path")) {
+				if (el.Attribute("data-icon-glyph") != null) continue;
 				Shape? s = ParsePathLike(el, ref nextId);
 				if (s != null) shapes.Add(s);
 			}
@@ -131,10 +132,21 @@ namespace Skyplan.Persistence {
 			float? cx = Attr(el, "cx"), cz = Attr(el, "cy");
 			if (cx == null || cz == null) return null;
 			float y = Attr(el, "data-y") ?? 0f;
+
+			LayerDefDto layer = ParseLayer(el);
+			XElement? iconEl = el.Parent?.Elements()
+				.FirstOrDefault(e => e.Name.LocalName == "path" && e.Attribute("data-icon-glyph") != null);
+			if (iconEl != null) {
+				layer.Icon = new LayerIconDto {
+					Path = iconEl.Attribute("d")?.Value ?? "",
+					Color = iconEl.Attribute("fill")?.Value,
+				};
+			}
+
 			return new Shape {
 				id = $"s{nextId++}",
 				Type = Tools.point,
-				layer = ParseLayer(el),
+				layer = layer,
 				pts = [new Vector3(cx.Value, y, cz.Value)],
 				Label = el.Attribute("data-label")?.Value,
 				Description = el.Attribute("data-description")?.Value,

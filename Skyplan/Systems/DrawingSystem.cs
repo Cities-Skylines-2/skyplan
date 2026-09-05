@@ -167,6 +167,11 @@ namespace Skyplan.Systems {
 
 			AddBinding(new TriggerBinding("skyplan", "clearIndicator", () => m_IndicatorBinding.Update("")));
 
+			AddBinding(new TriggerBinding("skyplan", "clearErase", () => {
+				m_EraseTarget = null;
+				m_HighlightBinding.Update("");
+			}));
+
 			AddBinding(new TriggerBinding("skyplan", "panelClosed", HidePanel));
 
 			AddBinding(new TriggerBinding<string>("skyplan", "setShapeLabel", HandleSetShapeLabel));
