@@ -40,6 +40,7 @@ namespace Skyplan.Systems {
 		private readonly List<Op> m_RedoStack = [];
 		private Shape m_ActiveShape;
 		private List<Vector3> _points = [];
+		private List<Vector3> _handles = [];
 		private Tools m_CurrentTool;
 		private LayerDefDto m_CurrentLayer = new() {
 			Id = "default", Label = "Default",
@@ -232,6 +233,7 @@ namespace Skyplan.Systems {
 			m_PanelVisible = false;
 			m_ActiveShape = null;
 			_points.Clear();
+			_handles.Clear();
 			m_PanelVisibleBinding.Update(false);
 			m_PreviewBinding.Update("");
 			m_IndicatorBinding.Update("");
@@ -302,7 +304,7 @@ namespace Skyplan.Systems {
 				layer = m_CurrentLayer,
 			};
 			m_ActiveShape.pts.Add(world);
-			if (m_CurrentTool == Tools.polygon) _points.Add(world);
+			if (m_CurrentTool == Tools.polygon || m_CurrentTool == Tools.curve) _points.Add(world);
 		}
 
 		private void HandleDrawMove(float sx, float sy) {
@@ -313,6 +315,13 @@ namespace Skyplan.Systems {
 			if (m_ActiveShape.Type == Tools.polygon) {
 				var previewPts = new List<Vector3>(_points) { world };
 				Shape temp = new() { id = "__preview__", Type = Tools.polygon, layer = m_ActiveShape.layer, pts = previewPts };
+				m_PreviewBinding.Update(ShapeToJSON(temp) ?? "");
+				return;
+			}
+
+			if (m_ActiveShape.Type == Tools.curve) {
+				var previewPts = new List<Vector3>(_points) { world };
+				Shape temp = new() { id = "__preview__", Type = Tools.curve, layer = m_ActiveShape.layer, pts = previewPts };
 				m_PreviewBinding.Update(ShapeToJSON(temp) ?? "");
 				return;
 			}
@@ -366,10 +375,10 @@ namespace Skyplan.Systems {
 		}
 
 		// Runs while idle (before the first click), so the user sees where a click would land -
-		// only path/polygon benefit; mid-draw feedback is already the moving preview shape itself.
+		// only path/polygon/curve benefit; mid-draw feedback is already the moving preview shape itself.
 		private void HandleDrawHover(float sx, float sy) {
 			if (!m_Camera.IsReady || m_ActiveShape != null) return;
-			if (m_CurrentTool != Tools.path && m_CurrentTool != Tools.polygon) {
+			if (m_CurrentTool != Tools.path && m_CurrentTool != Tools.polygon && m_CurrentTool != Tools.curve) {
 				m_IndicatorBinding.Update("");
 				return;
 			}
@@ -401,6 +410,24 @@ namespace Skyplan.Systems {
 				}
 				m_ActiveShape = null;
 				_points.Clear();
+				m_PreviewBinding.Update("");
+				return;
+			}
+
+			if (m_ActiveShape.Type == Tools.curve) {
+				m_ActiveShape.pts.Clear();
+				m_ActiveShape.pts.AddRange(_points);
+				if (m_ActiveShape.pts.Count >= 2) {
+					m_ActiveShape.CalcBounds();
+					m_Shapes.Add(m_ActiveShape);
+					PushUndo(new Op { type = OpType.Draw, shape = m_ActiveShape });
+					if (m_Camera.IsReady) {
+						UpdateShapesJson();
+					}
+				}
+				m_ActiveShape = null;
+				_points.Clear();
+				_handles.Clear();
 				m_PreviewBinding.Update("");
 				return;
 			}
@@ -524,6 +551,7 @@ namespace Skyplan.Systems {
 				Tag = shape.Type switch {
 					Tools.path => Tag.path,
 					Tools.polygon => Tag.polygon,
+					Tools.curve => Tag.curve,
 					Tools.point => Tag.circle,
 					Tools.text => Tag.text,
 					_ => Tag.none
@@ -532,6 +560,10 @@ namespace Skyplan.Systems {
 			foreach (Vector3 pt in shape.pts) {
 				if (!m_Camera.WorldToSVG(pt, out Vector2 p)) return null;
 				shapeDto.Pts.Add(new ScreenPt { x = p.x, y = p.y });
+			}
+			foreach (Vector3 h in shape.handles) {
+				if (!m_Camera.WorldToSVG(h, out Vector2 hp)) return null;
+				shapeDto.Handles.Add(new ScreenPt { x = hp.x, y = hp.y });
 			}
 			return shapeDto;
 		}

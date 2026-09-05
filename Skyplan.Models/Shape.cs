@@ -14,6 +14,11 @@ namespace Skyplan.Models{
 		public LayerDefDto layer;
 		[JsonProperty("pts")]
 		public List<Vector3> pts = [];
+		// Parallel to pts, world-space absolute handle point (anchor + tangent) per curve anchor.
+		// handles[i] == pts[i] means "no drag, auto-tangent" - can't use Vector3.zero as that sentinel
+		// since it's a real map location.
+		[JsonProperty("handles")]
+		public List<Vector3> handles = [];
 		[JsonProperty("label")]
 		public string? Label;
 		[JsonProperty("description")]

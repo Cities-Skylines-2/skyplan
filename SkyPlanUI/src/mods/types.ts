@@ -1,4 +1,4 @@
-import {faDrawPolygon, faEraser, faFont, faLocationDot, faRoad} from '@fortawesome/free-solid-svg-icons';
+import {faBezierCurve, faDrawPolygon, faEraser, faFont, faLocationDot, faRoad} from '@fortawesome/free-solid-svg-icons';
 
 export const TOOLS = [
   { id: 'path',
@@ -10,6 +10,11 @@ export const TOOLS = [
   { id: 'polygon',
 	label: 'Polygon',
 	icon: faDrawPolygon,
+	activeStyle: {} },
+
+  { id: 'curve',
+	label: 'Curve',
+	icon: faBezierCurve,
 	activeStyle: {} },
 
   { id: 'point',
@@ -39,6 +44,7 @@ export interface ShapeData {
 	tag: Tag;
 	layerId: string;
 	pts: { x: number; y: number }[];
+	handles: { x: number; y: number }[];
 	inFrame: boolean;
 	label?: string;
 	description?: string;
@@ -63,6 +69,7 @@ export enum Tag {
   none = 'none',
   path = 'path',
   polygon = 'polygon',
+  curve = 'curve',
   circle = 'circle',
   text = 'text',
 }

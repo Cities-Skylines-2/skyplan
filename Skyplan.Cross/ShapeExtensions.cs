@@ -8,7 +8,7 @@ namespace Skyplan.Cross {
 
 		public static IEnumerable<(Vector3 a, Vector3 b)> GetSnapSegments(this Shape s) {
 			if (s.Type == Tools.curve) {
-				List<Vector3> sampled = CurveMath.Sample(s.pts, s.handles);
+				List<Vector3> sampled = CurveMath.Sample(s.pts);
 				for (int i = 0; i < sampled.Count - 1; i++)
 					yield return (sampled[i], sampled[i + 1]);
 				yield break;
