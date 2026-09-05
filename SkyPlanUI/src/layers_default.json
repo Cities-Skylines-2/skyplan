@@ -11,9 +11,11 @@
       "id": "train",
       "label": "Train",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#333333",
         "stroke-width": 5,
         "stroke-dasharray": "14 5",
@@ -27,9 +29,11 @@
       "id": "subway",
       "label": "Subway",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#5533ff",
         "stroke-width": 4,
         "stroke-linecap": "round",
@@ -42,9 +46,11 @@
       "id": "tram",
       "label": "Tram",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#00cc77",
         "stroke-width": 3,
         "stroke-linecap": "round",
@@ -57,9 +63,11 @@
       "id": "bus",
       "label": "Bus",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#ff6633",
         "stroke-width": 2,
         "stroke-dasharray": "8 4",
@@ -73,9 +81,11 @@
       "id": "highway",
       "label": "Highway",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#ff4444",
         "stroke-width": 6,
         "stroke-linecap": "round",
@@ -88,9 +98,11 @@
       "id": "arterial",
       "label": "Arterial",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#ff8800",
         "stroke-width": 4,
         "stroke-linecap": "round",
@@ -103,9 +115,11 @@
       "id": "collector",
       "label": "Collector",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#ffcc00",
         "stroke-width": 3,
         "stroke-linecap": "round",
@@ -118,9 +132,11 @@
       "id": "local",
       "label": "Local",
       "allowedTools": [
-        "path"
+        "path",
+        "curve"
       ],
       "style": {
+        "fill": "none",
         "stroke": "#ffffff",
         "stroke-width": 2,
         "stroke-linecap": "round",

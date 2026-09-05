@@ -12,6 +12,8 @@ namespace Skyplan.Models.dto {
 		public string? LayerId;
 		[JsonProperty("pts")]
 		public List<ScreenPt> Pts = [];
+		[JsonProperty("handles")]
+		public List<ScreenPt> Handles = [];
 		[JsonProperty("inFrame")]
 		public bool InFrame;
 		[JsonProperty("label")]
@@ -31,6 +33,7 @@ namespace Skyplan.Models.dto {
 	  none,
 	  path,
 	  polygon,
+	  curve,
 	  circle,
 	  text,
 	}

@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {trigger} from 'cs2/api';
 import {ToolId, ShapeData, Tag, LayerDef, LabelStyle} from '../types';
-import {buildPath, buildPolygon, centroid} from 'mods/utils/buildSvg';
+import {buildPath, buildPolygon, buildCurve, centroid} from 'mods/utils/buildSvg';
 import {useSkyplan} from '../SkyplanContext';
 import {useDrawingContext} from 'mods/DrawingContext';
 
@@ -34,6 +34,7 @@ function labelPosition(s: ShapeData): { x: number; y: number } | null {
 	if (!s.pts.length) return null;
 	if (s.tag === Tag.polygon) return centroid(s.pts);
 	if (s.tag === Tag.path)    return centroid(s.pts);
+	if (s.tag === Tag.curve)   return centroid(s.pts);
 	if (s.tag === Tag.circle)  return { x: s.pts[0].x, y: s.pts[0].y - 12 };
 	return null;
 }
@@ -56,6 +57,11 @@ function renderShape(s: ShapeData, opacity?: string): React.ReactElement | null 
 			}
 			const points = buildPolygon(s.pts);
 			return <polygon key={s.id} className={cn} points={points} style={style} />;
+		}
+		case Tag.curve: {
+			const d = buildCurve(s.pts, s.handles);
+			if (!d) return null;
+			return <path key={s.id} className={cn} d={d} style={style} />;
 		}
 		case Tag.circle: {
 			const p = s.pts[0];
@@ -131,7 +137,7 @@ const DrawingCanvas: React.FC = () => {
 			if (viewModeRef.current) return false;
 			if (toolRef.current !== 'erase' && !activeLayerRef.current) return false;
 			lastInputRef.current = type;
-			if (toolRef.current === 'polygon') {
+			if (toolRef.current === 'polygon' || toolRef.current === 'curve') {
 				if (!drawingRef.current) {
 					drawingRef.current = true;
 					trigger('skyplan', 'drawStart', `${cx},${cy}`);
@@ -154,7 +160,7 @@ const DrawingCanvas: React.FC = () => {
 				trigger('skyplan', 'eraseHover', `${cx},${cy}`);
 				return true;
 			}
-			if (!drawingRef.current && activeLayerRef.current && (toolRef.current === 'path' || toolRef.current === 'polygon')) {
+			if (!drawingRef.current && activeLayerRef.current && (toolRef.current === 'path' || toolRef.current === 'polygon' || toolRef.current === 'curve')) {
 				trigger('skyplan', 'drawHover', `${cx},${cy}`);
 				return true;
 			}
@@ -167,6 +173,8 @@ const DrawingCanvas: React.FC = () => {
 
 		function endDraw(cx: number, cy: number) {
 			if (viewModeRef.current) return;
+			// Curve resolves its own final anchor server-side (HandleDrawEnd already gets this
+			// screen pos) - firing an extra addPoint here would corrupt its control/anchor parity.
 			if (toolRef.current === 'polygon') {
 				if (drawingRef.current) {
 					trigger('skyplan', 'addPoint', `${cx},${cy}`);
@@ -267,6 +275,7 @@ const DrawingCanvas: React.FC = () => {
 
 		document.addEventListener('mousedown', md, true);
 		document.addEventListener('mousemove', mm, true);
+		document.addEventListener('mouseup', mu, true);
 		document.addEventListener('pointerdown', pd, true);
 		document.addEventListener('pointermove', pm, true);
 		document.addEventListener('pointerup', pu, true);
@@ -274,6 +283,7 @@ const DrawingCanvas: React.FC = () => {
 		return () => {
 			document.removeEventListener('mousedown', md, true);
 			document.removeEventListener('mousemove', mm, true);
+			document.removeEventListener('mouseup', mu, true);
 			document.removeEventListener('pointerdown', pd, true);
 			document.removeEventListener('pointermove', pm, true);
 			document.removeEventListener('pointerup', pu, true);

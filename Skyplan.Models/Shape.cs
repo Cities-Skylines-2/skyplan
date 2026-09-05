@@ -14,6 +14,11 @@ namespace Skyplan.Models{
 		public LayerDefDto layer;
 		[JsonProperty("pts")]
 		public List<Vector3> pts = [];
+		// Parallel to pts, world-space absolute handle point (anchor + tangent) per curve anchor.
+		// handles[i] == pts[i] means "no drag, auto-tangent" - can't use Vector3.zero as that sentinel
+		// since it's a real map location.
+		[JsonProperty("handles")]
+		public List<Vector3> handles = [];
 		[JsonProperty("label")]
 		public string? Label;
 		[JsonProperty("description")]
@@ -21,14 +26,5 @@ namespace Skyplan.Models{
 		[JsonProperty("planId")]
 		public int PlanId;
 		public Bounds Extents;
-
-		public IReadOnlyList<Vector3> GetSnapVertices() => pts;
-
-		public IEnumerable<(Vector3 a, Vector3 b)> GetSnapSegments() {
-		  for (int i = 0; i < pts.Count - 1; i++)
-			yield return (pts[i], pts[i + 1]);
-		  if (Type == Tools.polygon && pts.Count > 2)
-			yield return (pts[pts.Count - 1], pts[0]);
-		}
 	}
 }

@@ -40,6 +40,7 @@ namespace Skyplan.Systems {
 		private readonly List<Op> m_RedoStack = [];
 		private Shape m_ActiveShape;
 		private List<Vector3> _points = [];
+		private List<Vector3> _handles = [];
 		private Tools m_CurrentTool;
 		private LayerDefDto m_CurrentLayer = new() {
 			Id = "default", Label = "Default",
@@ -232,6 +233,7 @@ namespace Skyplan.Systems {
 			m_PanelVisible = false;
 			m_ActiveShape = null;
 			_points.Clear();
+			_handles.Clear();
 			m_PanelVisibleBinding.Update(false);
 			m_PreviewBinding.Update("");
 			m_IndicatorBinding.Update("");
@@ -302,7 +304,7 @@ namespace Skyplan.Systems {
 				layer = m_CurrentLayer,
 			};
 			m_ActiveShape.pts.Add(world);
-			if (m_CurrentTool == Tools.polygon) _points.Add(world);
+			if (m_CurrentTool == Tools.polygon || m_CurrentTool == Tools.curve) _points.Add(world);
 		}
 
 		private void HandleDrawMove(float sx, float sy) {
@@ -313,6 +315,17 @@ namespace Skyplan.Systems {
 			if (m_ActiveShape.Type == Tools.polygon) {
 				var previewPts = new List<Vector3>(_points) { world };
 				Shape temp = new() { id = "__preview__", Type = Tools.polygon, layer = m_ActiveShape.layer, pts = previewPts };
+				m_PreviewBinding.Update(ShapeToJSON(temp) ?? "");
+				return;
+			}
+
+			if (m_ActiveShape.Type == Tools.curve) {
+				// Always append the cursor as a tentative next point - the renderer falls back to
+				// a straight line for any segment with no matching control yet, so pending-control
+				// state gets a plain rubber-band toward the cursor; pending-anchor state gets the
+				// real bend toward the cursor (the control is already locked).
+				List<Vector3> previewPts = new(_points) { world };
+				Shape temp = new() { id = "__preview__", Type = Tools.curve, layer = m_ActiveShape.layer, pts = previewPts, handles = new List<Vector3>(_handles) };
 				m_PreviewBinding.Update(ShapeToJSON(temp) ?? "");
 				return;
 			}
@@ -328,6 +341,20 @@ namespace Skyplan.Systems {
 			if (m_ActiveShape == null || !m_Camera.IsReady) return;
 			if (!m_Camera.ScreenToWorld(sx, sy, out Vector3 world)) return;
 			ApplySnap(ref world, sx, sy);
+
+			if (m_ActiveShape.Type == Tools.curve) {
+				// Every other click is a control (locked-in, continuing the previous segment's
+				// exit tangent) or an anchor (locks the segment the last control started) -
+				// alternating, driven purely by which list is currently shorter.
+				if (_handles.Count < _points.Count) {
+					Vector3? prevControl = _handles.Count > 0 ? _handles[_handles.Count - 1] : (Vector3?)null;
+					_handles.Add(CurveMath.ProjectControl(world, _points[_points.Count - 1], prevControl));
+				} else {
+					_points.Add(world);
+				}
+				return;
+			}
+
 			_points.Add(world);
 		}
 
@@ -366,10 +393,10 @@ namespace Skyplan.Systems {
 		}
 
 		// Runs while idle (before the first click), so the user sees where a click would land -
-		// only path/polygon benefit; mid-draw feedback is already the moving preview shape itself.
+		// only path/polygon/curve benefit; mid-draw feedback is already the moving preview shape itself.
 		private void HandleDrawHover(float sx, float sy) {
 			if (!m_Camera.IsReady || m_ActiveShape != null) return;
-			if (m_CurrentTool != Tools.path && m_CurrentTool != Tools.polygon) {
+			if (m_CurrentTool != Tools.path && m_CurrentTool != Tools.polygon && m_CurrentTool != Tools.curve) {
 				m_IndicatorBinding.Update("");
 				return;
 			}
@@ -401,6 +428,35 @@ namespace Skyplan.Systems {
 				}
 				m_ActiveShape = null;
 				_points.Clear();
+				m_PreviewBinding.Update("");
+				return;
+			}
+
+			if (m_ActiveShape.Type == Tools.curve) {
+				// Already complete (every locked control has its matching anchor) unless we're
+				// either mid-segment (a control was placed, awaiting its anchor) or nothing has
+				// locked yet (only the starting anchor exists, closes as a straight line) - both
+				// cases resolve the final click as the awaited anchor.
+				bool alreadyComplete = _handles.Count < _points.Count && _points.Count >= 2;
+				if (!alreadyComplete && m_Camera.ScreenToWorld(sx, sy, out Vector3 finalWorld)) {
+					ApplySnap(ref finalWorld, sx, sy);
+					_points.Add(finalWorld);
+				}
+				m_ActiveShape.pts.Clear();
+				m_ActiveShape.pts.AddRange(_points);
+				m_ActiveShape.handles.Clear();
+				m_ActiveShape.handles.AddRange(_handles);
+				if (m_ActiveShape.pts.Count >= 2) {
+					m_ActiveShape.CalcBounds();
+					m_Shapes.Add(m_ActiveShape);
+					PushUndo(new Op { type = OpType.Draw, shape = m_ActiveShape });
+					if (m_Camera.IsReady) {
+						UpdateShapesJson();
+					}
+				}
+				m_ActiveShape = null;
+				_points.Clear();
+				_handles.Clear();
 				m_PreviewBinding.Update("");
 				return;
 			}
@@ -524,6 +580,7 @@ namespace Skyplan.Systems {
 				Tag = shape.Type switch {
 					Tools.path => Tag.path,
 					Tools.polygon => Tag.polygon,
+					Tools.curve => Tag.curve,
 					Tools.point => Tag.circle,
 					Tools.text => Tag.text,
 					_ => Tag.none
@@ -532,6 +589,10 @@ namespace Skyplan.Systems {
 			foreach (Vector3 pt in shape.pts) {
 				if (!m_Camera.WorldToSVG(pt, out Vector2 p)) return null;
 				shapeDto.Pts.Add(new ScreenPt { x = p.x, y = p.y });
+			}
+			foreach (Vector3 h in shape.handles) {
+				if (!m_Camera.WorldToSVG(h, out Vector2 hp)) return null;
+				shapeDto.Handles.Add(new ScreenPt { x = hp.x, y = hp.y });
 			}
 			return shapeDto;
 		}

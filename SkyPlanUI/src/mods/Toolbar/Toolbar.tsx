@@ -109,6 +109,7 @@ const Toolbar: React.FC = () => {
 			if (target.closest('[data-tool-btn]')) {
 				e.preventDefault();
 				onToolChange(null);
+				onLayerChange(null);
 				return;
 			}
 			if (target.closest('[data-layer-btn]')) {
