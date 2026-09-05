@@ -59,7 +59,7 @@ function renderShape(s: ShapeData, opacity?: string): React.ReactElement | null 
 			return <polygon key={s.id} className={cn} points={points} style={style} />;
 		}
 		case Tag.curve: {
-			const d = buildCurve(s.pts);
+			const d = buildCurve(s.pts, s.handles);
 			if (!d) return null;
 			return <path key={s.id} className={cn} d={d} style={style} />;
 		}
@@ -173,7 +173,9 @@ const DrawingCanvas: React.FC = () => {
 
 		function endDraw(cx: number, cy: number) {
 			if (viewModeRef.current) return;
-			if (toolRef.current === 'polygon' || toolRef.current === 'curve') {
+			// Curve resolves its own final anchor server-side (HandleDrawEnd already gets this
+			// screen pos) - firing an extra addPoint here would corrupt its control/anchor parity.
+			if (toolRef.current === 'polygon') {
 				if (drawingRef.current) {
 					trigger('skyplan', 'addPoint', `${cx},${cy}`);
 				}

@@ -320,8 +320,12 @@ namespace Skyplan.Systems {
 			}
 
 			if (m_ActiveShape.Type == Tools.curve) {
-				var previewPts = new List<Vector3>(_points) { world };
-				Shape temp = new() { id = "__preview__", Type = Tools.curve, layer = m_ActiveShape.layer, pts = previewPts };
+				// Always append the cursor as a tentative next point - the renderer falls back to
+				// a straight line for any segment with no matching control yet, so pending-control
+				// state gets a plain rubber-band toward the cursor; pending-anchor state gets the
+				// real bend toward the cursor (the control is already locked).
+				List<Vector3> previewPts = new(_points) { world };
+				Shape temp = new() { id = "__preview__", Type = Tools.curve, layer = m_ActiveShape.layer, pts = previewPts, handles = new List<Vector3>(_handles) };
 				m_PreviewBinding.Update(ShapeToJSON(temp) ?? "");
 				return;
 			}
@@ -337,6 +341,20 @@ namespace Skyplan.Systems {
 			if (m_ActiveShape == null || !m_Camera.IsReady) return;
 			if (!m_Camera.ScreenToWorld(sx, sy, out Vector3 world)) return;
 			ApplySnap(ref world, sx, sy);
+
+			if (m_ActiveShape.Type == Tools.curve) {
+				// Every other click is a control (locked-in, continuing the previous segment's
+				// exit tangent) or an anchor (locks the segment the last control started) -
+				// alternating, driven purely by which list is currently shorter.
+				if (_handles.Count < _points.Count) {
+					Vector3? prevControl = _handles.Count > 0 ? _handles[_handles.Count - 1] : (Vector3?)null;
+					_handles.Add(CurveMath.ProjectControl(world, _points[_points.Count - 1], prevControl));
+				} else {
+					_points.Add(world);
+				}
+				return;
+			}
+
 			_points.Add(world);
 		}
 
@@ -415,8 +433,19 @@ namespace Skyplan.Systems {
 			}
 
 			if (m_ActiveShape.Type == Tools.curve) {
+				// Already complete (every locked control has its matching anchor) unless we're
+				// either mid-segment (a control was placed, awaiting its anchor) or nothing has
+				// locked yet (only the starting anchor exists, closes as a straight line) - both
+				// cases resolve the final click as the awaited anchor.
+				bool alreadyComplete = _handles.Count < _points.Count && _points.Count >= 2;
+				if (!alreadyComplete && m_Camera.ScreenToWorld(sx, sy, out Vector3 finalWorld)) {
+					ApplySnap(ref finalWorld, sx, sy);
+					_points.Add(finalWorld);
+				}
 				m_ActiveShape.pts.Clear();
 				m_ActiveShape.pts.AddRange(_points);
+				m_ActiveShape.handles.Clear();
+				m_ActiveShape.handles.AddRange(_handles);
 				if (m_ActiveShape.pts.Count >= 2) {
 					m_ActiveShape.CalcBounds();
 					m_Shapes.Add(m_ActiveShape);
