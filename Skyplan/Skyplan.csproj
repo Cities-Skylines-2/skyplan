@@ -74,6 +74,7 @@
 	<ItemGroup>
 		<ProjectReference Include="../Skyplan.Models/skyplan.Models.csproj"/>
 		<ProjectReference Include="../Skyplan.Persistence/Skyplan.Persistence.csproj"/>
+		<ProjectReference Include="../Skyplan.Cross/Skyplan.Cross.csproj"/>
 	</ItemGroup>
 
 	<ItemGroup>
