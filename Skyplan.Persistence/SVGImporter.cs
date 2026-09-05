@@ -1,6 +1,7 @@
 using Skyplan.Models;
 using Skyplan.Models.dto;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace Skyplan.Persistence {
 			XElement root = doc.Root;
 
 			foreach (XElement el in Descendants(root, "path")) {
-				Shape? s = ParsePath(el, ref nextId);
+				Shape? s = ParsePathLike(el, ref nextId);
 				if (s != null) shapes.Add(s);
 			}
 			foreach (XElement el in Descendants(root, "polygon")) {
@@ -36,28 +37,48 @@ namespace Skyplan.Persistence {
 		private static IEnumerable<XElement> Descendants(XElement root, string localName) =>
 			root.Descendants(SvgNs + localName).Concat(root.Descendants(localName));
 
-		private static Shape? ParsePath(XElement el, ref int nextId) {
+		// Tools.path is just Tools.curve with zero controls - one parser for both, distinguished
+		// by whether any "Q" command (and so any handles) turned up at all. Mirrors
+		// SVGExporter.ExportPathLike's "data-y" list convention (not the old discrete
+		// data-y0/data-y1 attrs a plain 2-point path used before path/curve export merged).
+		private static Shape? ParsePathLike(XElement el, ref int nextId) {
 			string? d = el.Attribute("d")?.Value?.Trim();
 			if (string.IsNullOrEmpty(d)) return null;
 
-			// Parse "M x1 z1 L x2 z2" — extract 4 numeric tokens, skip M/L commands
-			float[] nums = d.Split(new char[]{' ', ',', '\t', '\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
-				.Where(t => float.TryParse(t, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out _))
-				.Select(t => float.Parse(t, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture))
-				.ToArray();
-			if (nums.Length < 4) return null;
+			List<Vector3> pts = [];
+			List<Vector3> handles = [];
 
-			float y0 = Attr(el, "data-y0") ?? 0f;
-			float y1 = Attr(el, "data-y1") ?? 0f;
+			float[] yPts = [.. (el.Attribute("data-y")?.Value ?? "")
+				.Split(',', StringSplitOptions.RemoveEmptyEntries)
+				.Select(s => Attr(s) ?? 0f)];
+			float[] yHandles = [.. (el.Attribute("data-handle-y")?.Value ?? "")
+				.Split(',', StringSplitOptions.RemoveEmptyEntries)
+				.Select(s => Attr(s) ?? 0f)];
+
+			foreach (Match m in Regex.Matches(d, @"([MLQ])\s*([^MLQ]*)")) {
+				string cmd = m.Groups[1].Value;
+				float[] nums = [.. m.Groups[2].Value
+					.Split([' ', ',', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+					.Select(t => float.Parse(t, NumberStyles.Float, CultureInfo.InvariantCulture))];
+
+				if ((cmd == "M" || cmd == "L") && nums.Length >= 2) {
+					float y = pts.Count < yPts.Length ? yPts[pts.Count] : 0f;
+					pts.Add(new Vector3(nums[0], y, nums[1]));
+				} else if (cmd == "Q" && nums.Length >= 4) {
+					float hy = handles.Count < yHandles.Length ? yHandles[handles.Count] : 0f;
+					handles.Add(new Vector3(nums[0], hy, nums[1]));
+					float py = pts.Count < yPts.Length ? yPts[pts.Count] : 0f;
+					pts.Add(new Vector3(nums[2], py, nums[3]));
+				}
+			}
+			if (pts.Count < 2) return null;
 
 			return new Shape {
 				id = $"s{nextId++}",
-				Type = Tools.path,
+				Type = handles.Count > 0 ? Tools.curve : Tools.path,
 				layer = ParseLayer(el),
-				pts = [
-					new Vector3(nums[0], y0, nums[1]),
-					new Vector3(nums[2], y1, nums[3]),
-				],
+				pts = pts,
+				handles = handles,
 				Label = el.Attribute("data-label")?.Value,
 				Description = el.Attribute("data-description")?.Value,
 			};
@@ -91,7 +112,7 @@ namespace Skyplan.Persistence {
 			}
 
 			// Remove duplicate closing point added by exporter
-			if (pts.Count >= 2 && Vector3.Distance(pts[0], pts[pts.Count - 1]) < 0.01f)
+			if (pts.Count >= 2 && Vector3.Distance(pts[0], pts[^1]) < 0.01f)
 				pts.RemoveAt(pts.Count - 1);
 
 			if (pts.Count < 3) return null;
@@ -142,7 +163,7 @@ namespace Skyplan.Persistence {
 			foreach (string? part in (el.Attribute("style")?.Value ?? "").Split(';')) {
 				int colon = part.IndexOf(':');
 				if (colon > 0) {
-					style[part.Substring(0, colon).Trim()] = part.Substring(colon + 1).Trim();
+					style[part[..colon].Trim()] = part[(colon + 1)..].Trim();
 				}
 			}
 			return new LayerDefDto { Id = id, Label = id, Style = style };
