@@ -52,7 +52,8 @@ branches:
     is-main-branch: false
     pre-release-weight: 0
   main:
-    label: 'beta'
+    mode: ContinuousDeployment
+    label: 'alpha'
     increment: Patch
     prevent-increment:
       of-merged-branch: true

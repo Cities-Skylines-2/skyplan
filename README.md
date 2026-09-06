@@ -2,43 +2,61 @@
 
 **Cities: Skylines II mod** — in-game SVG drawing overlay for city planning.
 
-Tracing paper over your city map, but inside CS2. Draw road networks, zoning, districts, and transit lines on top of the live game map before committing anything.
+![thumbnail](Skyplan/Properties/Thumbnail.png)
+
+Tracing paper over your city map, but inside CS2. Draw road networks, zoning, transit lines, curves, and points of interest on top of the live game map before committing anything.
 
 ## Usage
 
-Load a city → press **Alt+P** (rebindable in Options → Key Bindings).
+Load a city, press **Alt+P** (rebindable in Options > Key Bindings).
 
-Plan your roads with line tool
+Left-click to start drawing, right-click to end the drawing.
 
-![Simple use](skyplan/Properties/screenshots/line_tool.png)
+- **Lines** - left-click starts a new segment from the end of the previous one.
+- **Polygons** - left-click adds a point, right-click closes the shape.
+- **Curves** - left-click alternates between anchor and control points, right-click ends the shape.
+- **Points** - left-click drops a circle (with an optional custom icon) on the map.
+- **Annotation** - click to preview a point, type in the toolbar's text field, press **Enter** to place the label.
 
-Plan your land usage with polygon tool
+Right-click a selected tool or layer in the toolbar to deselect it.
 
-![polygon_tool](skyplan/Properties/screenshots/polygon_tool.png)
+## Disclaimer
 
-Import and Export the SVGs
+This is a beta version - a lot of the feedback I got on Reddit isn't implemented yet. Even the thumbnail is under development.
 
-![settings](./skyplan/Properties/screenshots/settings_1.png)
+## Experimental Features
+
+- **Planning Tools**
+  - `ServiceCatchmentSystem`: while the Skyplan panel is open, clicking a school or hospital shows where its students/patients live.
 
 ## Features
 
-- Draw tools: line, polygon, point
+- Line, polygon, curve, point, and annotation drawing tools: plan roads, mark zones, drop points of interest
+- **35 built-in layers** - Transit (Train, Subway, Tram, Bus), Roads (Highway to Local), Zones (Residential incl. Low/Medium/High/Mixed-Use, Commercial incl. High, Industrial, Office), Public Services, and Points of Interest (incl. custom icons), each with its own colour and style
+- Custom icons for point layers: define `icon: {path, color}` per layer in `layers_default.json`, rendered in-game and in SVG export/import
+- Snapping: lines and polygons snap to existing shapes, with an indicator shown on hover
+- Fully customisable layers: edit `layers_default.json` to add, remove, or restyle any layer. Changes hot-swap without a game restart
+- World-space coordinates: shapes stay pinned to the map as you pan and zoom
 - Erase tool with hover highlight
-- **24 built-in layers** across Transit, Roads, Zones, Public Services, and Points of Interest — fully customisable via `layers.json`
+- SVG export and import: save your plans as standard SVG files, open them in Inkscape, share them, or import them back later
+- Auto Save/Load: the game auto-saves your shapes per city and loads them on start
+- Undo/Redo: (Ctrl+Z)/(Ctrl+Y)
 - Draggable toolbar
-- World-space coordinates — shapes stay aligned as the camera pans and zooms
-- Undo stack (Ctrl+Z)
-- Clear layer
+- Shape Manager: view all shapes grouped by layer, edit each shape's name and description, toggle layer visibility and label display
+- Canvas labels: shape names can be toggled to appear on the map at the shape's anchor point
+- Visual: global and per-layer opacity sliders
+- Per-layer visibility toggle
+- Deselect active tool/layer with right-click
 
-### Customising layers (`layers.json`)
+### Customising layers (`layers_default.json`)
 
-Layer definitions live in `SkyPlanUI/src/layers.json` and are deployed to the mod folder on every build. On first panel open, the file is seeded to:
+Layer definitions live in `SkyPlanUI/src/layers_default.json` and are deployed to the mod folder on every build. On first panel open, the file is seeded to:
 
 ```
-%AppData%\..\LocalLow\Colossal Order\Cities Skylines II\ModsData\skyplan\layers.json
+%AppData%\..\LocalLow\Colossal Order\Cities Skylines II\Mods\skyplan\layers_default.json
 ```
 
-Edit that file to customise colours, add layers, or remove ones you don't need. Changes take effect the next time you open the panel (hot-swap — no rebuild required).
+Edit that file to customise colours, add layers, or remove ones you don't need. Changes take effect the next time you open the panel (hot-swap - no rebuild required).
 
 #### Schema
 
@@ -49,7 +67,7 @@ Edit that file to customise colours, add layers, or remove ones you don't need. 
     {
       "id": "my-layer",          // unique identifier, used internally
       "label": "My Layer",       // displayed in the toolbar
-      "allowedTools": ["line"],  // which tools show this layer: "line" | "polygon" | "point"
+      "allowedTools": ["path"],  // which tools show this layer: "path" | "polygon" | "curve" | "point" | "text"
       "style": {
         // any valid SVG presentation attribute is accepted, e.g.:
         "stroke": "#ff4444",
@@ -59,39 +77,29 @@ Edit that file to customise colours, add layers, or remove ones you don't need. 
         "fill": "#ff4444",
         "fill-opacity": "0.5",
         "opacity": "0.8"
+      },
+      "icon": {                  // optional, point layers only
+        "path": "M-4,-4 L4,-4 ...",  // SVG path data, authored in roughly -4..4 local space
+        "color": "#000000"           // optional, defaults to black
       }
     }
   ]
 }
 ```
 
-Any SVG presentation attribute is valid inside `style` — `stroke-dasharray`, `opacity`, `fill-rule`, etc. String and number values are both accepted.
+Any SVG presentation attribute is valid inside `style` - `stroke-dasharray`, `opacity`, `fill-rule`, etc. String and number values are both accepted.
 
-#### Built-in layers
+## Known Issues
 
-| Category | Layer | Tool | Colour |
-|---|---|---|---|
-| Roads | Highway | line | `#ff4444` |
-| Roads | Arterial | line | `#ff8800` |
-| Roads | Collector | line | `#ffcc00` |
-| Roads | Local | line | `#ffffff` |
-| Zones | Residential | polygon | `#44cc88` |
-| Zones | Commercial | polygon | `#4488ff` |
-| Zones | Industrial | polygon | `#ffaa22` |
-| Zones | Office | polygon | `#cc88ff` |
-| Services | Healthcare | polygon | `#ff4488` |
-| Services | Education | polygon | `#44ddff` |
-| Services | Police & Admin | polygon | `#3366ff` |
-| Services | Fire & Rescue | polygon | `#ff6622` |
-| Services | Parks & Rec | polygon | `#33bb55` |
-| Services | Utilities | polygon | `#ffdd00` |
-| Services | Garbage | polygon | `#996633` |
-| Services | Transport | polygon | `#cc44ff` |
-| Services | Telecom & Post | polygon | `#66cccc` |
+- Changing styles in `layers_default.json` while shapes already exist in the current session won't hot-reload. It needs a clear-all for the new style to take effect.
+
+## Limitations
+
+- Each line is a separate two-point segment; continuous polylines are planned but not yet implemented.
 
 ## Build
 
-Requires Windows + PDX Modding Toolchain installed in-game (CS2 → Mods → Install Modding Toolchain).
+Requires Windows + the PDX Modding Toolchain installed in-game (CS2 > Mods > Install Modding Toolchain).
 
 First-time setup:
 
@@ -104,23 +112,21 @@ npm install
 Then on every build:
 
 ```
-dotnet build  .\skyplan\skyplan.csproj
+dotnet build
 ```
 
 This single command:
-1. Runs `npm run build` in `SkyPlanUI/` (webpack → `Mods/skyplan/skyplan.mjs`)
-2. Compiles `skyplan.dll`
-3. Runs `ModPostProcessor.exe` → `skyplan_win_x86_64.dll`
-4. Deploys both DLLs to `%CSII_LOCALMODSPATH%\skyplan\`
-5. Deploys `layers.json` to `%CSII_LOCALMODSPATH%\skyplan\`
+1. Compiles `skyplan.dll`
+2. Runs `ModPostProcessor.exe` > `skyplan_win_x86_64.dll`
+3. Deploys both DLLs to `%CSII_LOCALMODSPATH%\skyplan\`
+4. Runs the `DeployUI` target, copying `UI/` (webpack output from `SkyPlanUI/`) alongside the DLLs
+
+There are no automated tests beyond `Skyplan.Tests`. Validate by reading the Player log after launching the game.
 
 ## Logs
 
 ```
-%AppData%\..\LocalLow\Colossal Order\Cities Skylines II\Logs\skyplan.Mod.log
-%AppData%\..\LocalLow\Colossal Order\Cities Skylines II\Logs\UI.log
+%AppData%\..\LocalLow\Colossal Order\Cities Skylines II\Player.log
 ```
 
-## What's next
-
-- Terrain snapping (snap to roads, zone grid)
+Look for `[Skyplan.Mod] OnLoad` and `[Skyplan.DrawingSystem] DrawingSystem.OnCreate`.
