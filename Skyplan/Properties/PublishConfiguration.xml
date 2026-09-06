@@ -19,18 +19,25 @@ For lines, left-click starts a new segment from the end of the previous one.
 
 For polygons, left-click adds a point and right-click closes the shape.
 
+For curves, left-click alternates between anchor and control points, and right-click ends the shape.
+
 For Annotation, a small circle preview will be shown on the map where you clicked, a text field will show in the toolbar to write the text, then press **Enter** and the text will appear on the map.
 
+For Points, a small circle with Icon in the middle with left-click on the map.
+
+Right-click a selected tool or layer in the toolbar to deselect it.
 
 ### Disclaimer
 
-This is a rough beta version, a lot of the feedback that i got on reddit is not yet implemented. even the Thumbnail is under development.
+This is a beta version, a lot of the feedback that i got on reddit is not yet implemented. even the Thumbnail is under development.
 
 The next minor beta version (milestone) will include:
 
-v0.1.2:
+v0.1.3:
 
-* TBD
+* select multiable lines to create parallel lines.
+* Improve curve tool.
+* create more custom Icons.
 
 ### Experimental Features
 
@@ -39,9 +46,12 @@ v0.1.2:
 
 ### Features
 
-* Line, polygon, point and annotation drawing tools: plan roads, mark zones, drop points of interest
-* 29 built-in layers: Transit (Train, Subway, Tram, Bus), Roads (Highway to Local), Zones (Residential, Commercial, Industrial, Office), Public Services, and Points of Interest — each with its own colour and style
+* Line, polygon, curve, point and annotation drawing tools: plan roads, mark zones, drop points of interest
+* 35 built-in layers: Transit (Train, Subway, Tram, Bus), Roads (Highway to Local), Zones (Residential incl. Low/Medium/High/Mixed-Use, Commercial incl. High, Industrial, Office), Public Services, and Points of Interest (incl. custom icons), each with its own colour and style
+* Snapping: lines and polygons snap to existing shapes, with an indicator shown on hover
+* Deselect active tool/layer with right-click
 * Fully customisable layers: edit `layers.json` to add, remove, or restyle any layer. Changes hot-swap without a game restart
+* Custom icons for point layers: define `icon: {path, color}` per layer in `layers.json`, renders in-game and in SVG export/import
 * World-space coordinates: shapes stay pinned to the map as you pan and zoom
 * Erase tool: with hover highlight
 * SVG export and import: save your plans as standard SVG files, open them in Inkscape, share them, or import them back later
@@ -59,12 +69,20 @@ v0.1.2:
 
 ## Limitations
 
-* No snapping, lines do not snap to roads, the grid, or other shapes.
 * Each line is a separate two-point segment, continuous polylines are planned but not yet implemented.
 
-### Usage
+## Usage
 
 Load a city, press **Alt+P**, draw.
+
+## message from the developer
+
+I have been working on this mod since 04.2026, and I still need time to call this mod a stable version.
+The development of this mod might be slow, for 2 reasons:
+- I am not a game-developer, I work as full-stack developer, my main languges are C#, TS and lua. C# and TS is perfect for cs2 mod but I am still figuring out unity and how it works. Lua I am working on neovim plugin (be free to check it out)
+- This mod is not AI-generated code, nor I plan to generate more code so I can push Features faster and release. I do enjoy coding and testing stuff out, and i will not let AI take away this enjoyment.
+
+I plan to push experimental features to help planing, if you have suggestions, be free to write them or create github issue.
 	</LongDescription>
 	<Thumbnail Value="Properties/Thumbnail.png" />
 	<Screenshot Value="Properties/screenshots/cover.png" />
