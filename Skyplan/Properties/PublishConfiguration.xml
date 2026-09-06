@@ -70,6 +70,7 @@ Load a city, press **Alt+P**, draw.
 	<Screenshot Value="Properties/screenshots/cover.png" />
 	<Screenshot Value="Properties/screenshots/workflow_1.png" />
 	<Screenshot Value="Properties/screenshots/detailed_planing.png" />
+	<Screenshot Value="Properties/screenshots/custom_icons.png" />
 	<Screenshot Value="Properties/screenshots/settings_1.png" />
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
@@ -86,14 +87,14 @@ Load a city, press **Alt+P**, draw.
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
 ## 0.1.1-beta
-- Added: (Experimental) Service building info overlay (ServiceCatchmentSystem): click a school or hospital while the panel is open to see capacity/enrolled and where its students/patients live.
-- Added: Redo support (Ctrl+Z / Ctrl+Y), alongside undo.
-- Added: Auto-save and auto-load: your plan is saved per-city automatically.
+- Added: Curve Tool.
+- Added: Custom Icons for the Point Tool
+- Added: snapping, lines and polygon do snap to other shapes, with indentifier on the overview.
 - UX enhancements:
-  - Default layers for all residential zone types (Low/Medium/High), Mixed Use, and Commercial High.
-  - Shapes in the Shape-Manager is now Collapsible. Collapsed per default.
-  - No layer is pre-selected when the panel opens, preventing accidental drawing.
-  - Increased UI text size for readability.
+  - you can now deselect tools and layers with right-click.
+- Improve performance. 
+- Bug-fixes:
+  - fix a bug where shapes become distorted when zooming..
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/aous-afk/skyplan" />
