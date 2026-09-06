@@ -95,7 +95,7 @@ I plan to push experimental features to help planing, if you have suggestions, b
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/skyplan-support-and-feedback.1936742/#post-31440244" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.1.1-beta" />
+	<ModVersion Value="0.1.2-beta" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.6.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -104,7 +104,7 @@ I plan to push experimental features to help planing, if you have suggestions, b
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-## 0.1.1-beta
+## 0.1.2-beta
 - Added: Curve Tool.
 - Added: Custom Icons for the Point Tool
 - Added: snapping, lines and polygon do snap to other shapes, with indentifier on the overview.
