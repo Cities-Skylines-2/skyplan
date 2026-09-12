@@ -1,0 +1,70 @@
+.panel {
+  display: inline-flex;
+  flex-direction: column;
+  background: rgba(18,18,18,0.92);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.drag_handle {
+  height: 24px;
+  padding: 0 6px 0 12px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--skyplan-font-size-sm);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.title {
+  font-size: 150%;
+  color: rgba(var(--skyplan-blue), 1);
+}
+
+.btn_group {
+  display: flex;
+  align-items: center;
+}
+
+.btn_base {
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 2px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: var(--skyplan-font-size-lg);
+  font-weight: 600;
+  background: transparent;
+
+  &:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+
+    .svg {
+      color: #fff;
+    }
+  }
+}
+
+// Deliberately a separate top-level rule, not `&.btn_right` nested inside .btn_base: GameFace
+// doesn't match compound class selectors (two classes AND-ed on one element, e.g. `.a.b{}`) even
+// when both classes are genuinely present on the element - confirmed 2026-09-12 (hover, a single
+// class + pseudo-class, worked fine; the compound `.btn_base.btn_right` never applied). Relying on
+// plain CSS source order between two independent single-class rules instead - this one must stay
+// textually after .btn_base above so it wins the (equal-specificity) cascade.
+.btn_right {
+  background: rgba(74, 144, 217, 0.15);
+}
+
+.svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  overflow: hidden;
+  color: #bbb;
+}

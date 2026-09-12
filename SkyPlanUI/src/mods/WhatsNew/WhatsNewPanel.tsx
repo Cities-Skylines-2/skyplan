@@ -1,5 +1,6 @@
 import React from 'react';
-import {Panel, Scrollable, FormattedParagraphs, MarkdownRenderer, PanelFoldout} from 'cs2/ui';
+import {Scrollable, FormattedParagraphs, MarkdownRenderer, PanelFoldout} from 'cs2/ui';
+import DraggablePanel from '../DraggablePanel/DraggablePanel';
 import {WHATS_NEW, WhatsNewEntry} from './whatsNewData';
 import styles from './WhatsNewPanel.module.scss';
 
@@ -36,16 +37,22 @@ const EntryView: React.FC<{ entry: WhatsNewEntry; accent?: boolean }> = ({entry,
 	</div>
 );
 
+const PANEL_WIDTH = 600;
+const ASSUMED_PANEL_HEIGHT = 450;
+
 const WhatsNewPanel: React.FC<WhatsNewPanelProps> = ({onClose}) => {
 	const [newest, ...older] = WHATS_NEW;
 
 	return (
-		<Panel
-			draggable
-			initialPosition={{x: 0.3, y: 0.2}}
-			className={styles.panel}
-			header={<span className={styles.title}>What's New</span>}
+		<DraggablePanel
+			persistKey="whats-new"
+			title="What's New"
 			onClose={onClose}
+			defaultPosition={{
+				left: Math.max(20, (window.innerWidth - PANEL_WIDTH) / 2),
+				top: Math.max(20, (window.innerHeight - ASSUMED_PANEL_HEIGHT) / 2),
+			}}
+			className={styles.panel}
 		>
 			<Scrollable className={styles.body}>
 				{newest && <EntryView entry={newest} accent />}
@@ -55,7 +62,7 @@ const WhatsNewPanel: React.FC<WhatsNewPanelProps> = ({onClose}) => {
 					</PanelFoldout>
 				)}
 			</Scrollable>
-		</Panel>
+		</DraggablePanel>
 	);
 };
 

@@ -1,22 +1,18 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {trigger} from 'cs2/api';
 import {TOOLS, Tag} from '../types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faXmark, faUndo, faRedo, faMagnet, faCircleQuestion} from '@fortawesome/free-solid-svg-icons'
+import {faUndo, faRedo, faMagnet} from '@fortawesome/free-solid-svg-icons'
 import styles from './Toolbar.module.scss';
 import {useSkyplan} from '../SkyplanContext';
 import {useDrawingContext} from "mods/DrawingContext";
 import ShapeManager from "mods/ShapeManager/ShapeManager";
 
-const DRAG_THRESHOLD = 6;
-
 const Toolbar: React.FC = () => {
 	const {
 		activeTool, activeLayer, visibleLayers, viewMode,
-		toolbarPos, onToolbarPosChange,
 		onViewModeToggle, onToolChange, onLayerChange,
-		onUndo, onRedo, onClear, onClearAll, onClose,
-		onOpenWhatsNew,
+		onUndo, onRedo, onClear, onClearAll,
 	} = useSkyplan();
 
 	const {
@@ -49,54 +45,6 @@ const Toolbar: React.FC = () => {
 		setPendingTextId(null);
 	};
 
-	const toolbarEl = useRef<HTMLDivElement>(null);
-	const dragHandleEl = useRef<HTMLDivElement>(null);
-	const tbDownRef = useRef(false);
-	const tbDownPosRef = useRef({ x: 0, y: 0 });
-	const draggingRef = useRef(false);
-	const dragOffRef = useRef({ x: 0, y: 0 });
-
-
-	useEffect(() => {
-		if (!toolbarPos && toolbarEl.current) {
-			onToolbarPosChange({ left: 12, top: 12 });
-		}
-	}, []);
-
-	useEffect(() => {
-		function inDragHandle(cx: number, cy: number) {
-			if (!dragHandleEl.current) return false;
-			const r = dragHandleEl.current.getBoundingClientRect();
-			return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
-		}
-		const md = (e: MouseEvent) => {
-			if (e.button !== 0 || !inDragHandle(e.clientX, e.clientY)) return;
-			tbDownRef.current = true;
-			tbDownPosRef.current = { x: e.clientX, y: e.clientY };
-		};
-		const mm = (e: MouseEvent) => {
-			if (!tbDownRef.current) return;
-			const dx = e.clientX - tbDownPosRef.current.x, dy = e.clientY - tbDownPosRef.current.y;
-			if (!draggingRef.current && dx * dx + dy * dy > DRAG_THRESHOLD * DRAG_THRESHOLD) {
-				draggingRef.current = true;
-				const el = toolbarEl.current;
-				if (el) dragOffRef.current = { x: tbDownPosRef.current.x - el.offsetLeft, y: tbDownPosRef.current.y - el.offsetTop };
-			}
-			if (draggingRef.current)
-				onToolbarPosChange({ left: e.clientX - dragOffRef.current.x, top: e.clientY - dragOffRef.current.y });
-		};
-		const mu = () => { tbDownRef.current = false; draggingRef.current = false; };
-
-		document.addEventListener('mousedown', md, true);
-		document.addEventListener('mousemove', mm, true);
-		document.addEventListener('mouseup', mu, true);
-		return () => {
-			document.removeEventListener('mousedown', md, true);
-			document.removeEventListener('mousemove', mm, true);
-			document.removeEventListener('mouseup', mu, true);
-		};
-	}, []);
-
 	// React's synthetic onMouseDown/onContextMenu never fire for the right mouse button in this
 	// environment (Coherent's React integration filters non-primary-button events before they
 	// reach component handlers) - confirmed via raw document.addEventListener seeing the event
@@ -123,25 +71,7 @@ const Toolbar: React.FC = () => {
 	}, [onToolChange, onLayerChange]);
 
 	return (
-		<div ref={toolbarEl} className={styles.toolbar} style={{
-			position: 'absolute',
-			left: toolbarPos?.left ?? 0,
-			top: toolbarPos?.top ?? 12,
-			pointerEvents: 'auto', userSelect: 'none',
-		}}>
-
-			<div ref={dragHandleEl} className={styles.drag_handle}>
-			  <span className={styles.title_handel_bar}>SkyPlan</span>
-			  <div className={styles.btn_group}>
-				<button onClick={onOpenWhatsNew} className={`${styles.btn_base} ${styles.btn_right}`}>
-				  <FontAwesomeIcon icon={faCircleQuestion} className={styles.svg} />
-				</button>
-				<button onClick={onClose} className={`${styles.btn_base} ${styles.btn_right}`}>
-				  <FontAwesomeIcon icon={faXmark} className={styles.svg} />
-				</button>
-			  </div>
-			</div>
-
+		<>
 			<div className={styles.actions_container}>
 				<button onClick={onUndo} className={styles.btn_base}>
 					<FontAwesomeIcon icon={faUndo} className={styles.svg} />
@@ -236,7 +166,7 @@ const Toolbar: React.FC = () => {
 					</div>
 				</div>
 			</div>}
-		</div>
+		</>
 	);
 };
 
