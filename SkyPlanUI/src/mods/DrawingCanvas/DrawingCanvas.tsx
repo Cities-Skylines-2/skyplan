@@ -97,7 +97,7 @@ function renderShape(s: ShapeData, icon: LayerIcon | undefined, opacity?: string
 }
 
 const DrawingCanvas: React.FC = () => {
-	const { activeTool, activeLayer, viewMode, globalLabelStyle, allLayers } = useSkyplan();
+	const { activeTool, activeLayer, viewMode, globalLabelStyle, allLayers, showWhatsNew } = useSkyplan();
 	const layerDefsMap = useMemo(() =>
 		Object.fromEntries(allLayers.map(l => [l.id, l])),
 		[allLayers]
@@ -117,9 +117,14 @@ const DrawingCanvas: React.FC = () => {
 	const toolRef = useRef<ToolId | null>('path');
 	const viewModeRef = useRef(true);
 	const activeLayerRef = useRef<LayerDef | null>(null);
+	// Blocks all drawing/keyboard input while in view mode OR while a blocking panel (e.g.
+	// What's New) is open - same semantics as viewModeRef already had, just OR'd with the panel
+	// state so nothing extra needs to change at each of the many gate sites below.
+	const blockInputRef = useRef(true);
 
 	useEffect(() => { toolRef.current = activeTool; }, [activeTool]);
 	useEffect(() => { viewModeRef.current = viewMode; }, [viewMode]);
+	useEffect(() => { blockInputRef.current = viewMode || showWhatsNew; }, [viewMode, showWhatsNew]);
 	useEffect(() => {
 		activeLayerRef.current = activeLayer;
 		if (!activeLayer) trigger('skyplan', 'clearIndicator', '');
@@ -210,7 +215,7 @@ const DrawingCanvas: React.FC = () => {
 		}
 
 		const md = (e: MouseEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			switch (e.button) {
 				case 0:
 					if ((e.target as Element).closest('[data-skyplan-ui]')) return;
@@ -231,7 +236,7 @@ const DrawingCanvas: React.FC = () => {
 		};
 
 		const mm = (e: MouseEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			if (e.buttons & 2) return;
 			// Cursor is over our own UI (toolbar etc), not the map - any stale hover feedback
 			// (erase highlight, snap indicator) needs clearing, or it sticks until a real canvas
@@ -247,7 +252,7 @@ const DrawingCanvas: React.FC = () => {
 			}
 		};
 		const mu = (e: MouseEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			if (e.button !== 2) return;
 			if (onUp(e.clientX, e.clientY, 'mouse')) {
 				e.stopImmediatePropagation();
@@ -255,7 +260,7 @@ const DrawingCanvas: React.FC = () => {
 			}
 		};
 		const pd = (e: PointerEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			if (e.button !== 0) return;
 			if ((e.target as Element).closest('[data-skyplan-ui]')) return;
 			if (onDown(e.clientX, e.clientY, 'pointer')) {
@@ -264,7 +269,7 @@ const DrawingCanvas: React.FC = () => {
 			}
 		};
 		const pm = (e: PointerEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			if (e.buttons & 2) return;
 			if ((e.target as Element).closest('[data-skyplan-ui]')) {
 				trigger('skyplan', 'clearIndicator', '');
@@ -277,7 +282,7 @@ const DrawingCanvas: React.FC = () => {
 			}
 		};
 		const pu = (e: PointerEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			if (e.button !== 2) return;
 			if (onUp(e.clientX, e.clientY, 'pointer')) {
 				e.stopImmediatePropagation();
@@ -286,7 +291,7 @@ const DrawingCanvas: React.FC = () => {
 		};
 
 		const kd = (e: KeyboardEvent) => {
-			if (viewModeRef.current) return;
+			if (blockInputRef.current) return;
 			if (e.key === 'Escape') {
 				drawingRef.current = false;
 				trigger('skyplan', 'panelClosed', '');

@@ -4,9 +4,10 @@ import {DrawingProvider} from './DrawingContext';
 import Toolbar from './Toolbar/Toolbar';
 import DrawingCanvas from './DrawingCanvas/DrawingCanvas';
 import ServiceCatchmentOverlay from './ServiceCatchmentOverlay';
+import WhatsNewPanel from './WhatsNew/WhatsNewPanel';
 
 const SkyplanOverlayInner: React.FC = () => {
-	const { visible } = useSkyplan();
+	const { visible, showWhatsNew, onCloseWhatsNew } = useSkyplan();
 	if (!visible) return null;
 
 	return (
@@ -14,6 +15,7 @@ const SkyplanOverlayInner: React.FC = () => {
 			<div data-skyplan-ui
 				style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, pointerEvents: 'none' }}>
 				<Toolbar />
+				{showWhatsNew && <WhatsNewPanel onClose={onCloseWhatsNew} />}
 			</div>
 			<DrawingCanvas />
 			<ServiceCatchmentOverlay />

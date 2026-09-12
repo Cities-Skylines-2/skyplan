@@ -1,0 +1,88 @@
+.panel {
+  width: 600px !important;
+  max-height: 70vh !important;
+  background: rgba(18,18,18,0.92) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: #bbb;
+  box-shadow: none !important;
+
+  // neutralize the native panel's own header/content chrome (padding, background) so our own
+  // styling wins - same classnames the native draggable-panel component always renders with,
+  // confirmed from the live DOM (header_Bpo / content_AD7), matching the same fix an earlier,
+  // abandoned attempt at this (via getModule() on the internal component) already had to apply.
+  :global(.header_Bpo) {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  }
+
+  :global(.content_AD7) {
+    padding: 0 !important;
+    background: transparent !important;
+  }
+}
+
+.title {
+  font-size: var(--skyplan-font-size-sm);
+  font-weight: 600;
+  color: rgba(var(--skyplan-blue), 1);
+  padding-left: 6px;
+}
+
+.body {
+  max-height: 60vh;
+  padding: 10px 12px;
+}
+
+.entry {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+.entry_newest {
+  padding-left: 8px;
+  border-left: 2px solid rgba(var(--skyplan-blue), 1);
+}
+
+.entry_header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.version {
+  font-size: var(--skyplan-font-size-lg);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.date {
+  font-size: var(--skyplan-font-size-xs);
+  color: rgba(255,255,255,0.4);
+}
+
+.bullets {
+  font-size: var(--skyplan-font-size-sm);
+  line-height: 1.5;
+}
+
+// Width/height are set inline per-image as explicit pixel numbers (computed in WhatsNewPanel.tsx
+// from each image's known natural dimensions) - GameFace does not reliably resolve `height: auto`
+// or a percentage-padding aspect-ratio box on <img> (both confirmed broken 2026-09-12), so no
+// auto/percentage sizing is used here at all.
+.media {
+  display: block;
+  margin-top: 8px;
+  border-radius: 6px;
+}

@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {trigger} from 'cs2/api';
 import {TOOLS, Tag} from '../types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faXmark, faUndo, faRedo, faMagnet} from '@fortawesome/free-solid-svg-icons'
+import {faXmark, faUndo, faRedo, faMagnet, faCircleQuestion} from '@fortawesome/free-solid-svg-icons'
 import styles from './Toolbar.module.scss';
 import {useSkyplan} from '../SkyplanContext';
 import {useDrawingContext} from "mods/DrawingContext";
@@ -16,6 +16,7 @@ const Toolbar: React.FC = () => {
 		toolbarPos, onToolbarPosChange,
 		onViewModeToggle, onToolChange, onLayerChange,
 		onUndo, onRedo, onClear, onClearAll, onClose,
+		onOpenWhatsNew,
 	} = useSkyplan();
 
 	const {
@@ -131,9 +132,14 @@ const Toolbar: React.FC = () => {
 
 			<div ref={dragHandleEl} className={styles.drag_handle}>
 			  <span className={styles.title_handel_bar}>SkyPlan</span>
-			  <button onClick={onClose} className={`${styles.btn_base} ${styles.btn_right}`}>
-				<FontAwesomeIcon icon={faXmark} className={styles.svg} />
-			  </button>
+			  <div className={styles.btn_group}>
+				<button onClick={onOpenWhatsNew} className={`${styles.btn_base} ${styles.btn_right}`}>
+				  <FontAwesomeIcon icon={faCircleQuestion} className={styles.svg} />
+				</button>
+				<button onClick={onClose} className={`${styles.btn_base} ${styles.btn_right}`}>
+				  <FontAwesomeIcon icon={faXmark} className={styles.svg} />
+				</button>
+			  </div>
 			</div>
 
 			<div className={styles.actions_container}>

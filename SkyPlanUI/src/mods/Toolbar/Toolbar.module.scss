@@ -15,9 +15,13 @@
   justify-content: space-between;
   font-size: var(--skyplan-font-size-sm);
   font-weight: 600;
-  color: rgba(255,255,255,0.4);
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  color: rgba(74, 144, 217, 1);
+  color: rgba(var(--skyplan-blue), 1);
+}
+
+.btn_group {
+  display: flex;
+  align-items: center;
 }
 
 

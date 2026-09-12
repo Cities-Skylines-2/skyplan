@@ -4,6 +4,9 @@
   --skyplan-font-size-sm: 13px;
   --skyplan-font-size-md: 14px;
   --skyplan-font-size-lg: 15px;
+  // R,G,B triplet (no rgb()/rgba() wrapper) so callers can pick their own alpha:
+  // rgba(var(--skyplan-blue), 0.5)
+  --skyplan-blue: 74, 144, 217;
 }
 
 .opacity_row {
@@ -19,11 +22,11 @@
 .opacity_label {
   font-size: var(--skyplan-font-size-xs);
   font-weight: 600;
-  color: rgba(74, 144, 217, 0.9);
+  color: rgba(var(--skyplan-blue), 0.9);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   flex-shrink: 0;
-  background: rgba(74, 144, 217, 0.15);
+  background: rgba(var(--skyplan-blue), 0.15);
   padding: 2px 7px;
   border-radius: 4px;
 }
@@ -38,8 +41,8 @@
 .opacity_value {
   font-size: var(--skyplan-font-size-xs);
   font-weight: 600;
-  color: rgba(74, 144, 217, 0.9);
-  background: rgba(74, 144, 217, 0.15);
+  color: rgba(var(--skyplan-blue), 0.9);
+  background: rgba(var(--skyplan-blue), 0.15);
   padding: 2px 7px;
   border-radius: 4px;
   flex-shrink: 0;
