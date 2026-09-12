@@ -1,0 +1,96 @@
+.panel {
+  display: inline-flex;
+  flex-direction: column;
+  background: rgba(18,18,18,0.92);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.drag_handle {
+  height: 24px;
+  padding: 0 6px 0 12px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--skyplan-font-size-sm);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.title {
+  font-size: 150%;
+  color: rgba(var(--skyplan-blue), 1);
+}
+
+.btn_group {
+  display: flex;
+  align-items: center;
+}
+
+.btn_base {
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 2px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: var(--skyplan-font-size-lg);
+  font-weight: 600;
+  position: relative;
+  background: transparent;
+
+  &:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+
+    .svg {
+      color: #fff;
+    }
+  }
+
+  .tooltip {
+    z-index: 1;
+    position: absolute;
+    top: 100%;
+    margin-top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18,18,18,0.95);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 2px;
+    padding: 4px 8px;
+    font-size: var(--skyplan-font-size-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .tooltip {
+    opacity: 1;
+  }
+}
+
+// Deliberately a separate top-level rule, not `&.btn_right` nested inside .btn_base: in this one
+// specific case, `.btn_base.btn_right { }` (the compound selector `&.btn_right` compiles to)
+// silently never applied even with both classes genuinely present on the element - confirmed
+// 2026-09-12 (hover, a single class + pseudo-class, worked fine; only the compound AND failed).
+// Root cause not fully isolated (the identical nested-modifier pattern works fine elsewhere in
+// this codebase, e.g. Toolbar.module.scss's `.btn_active` - so this isn't a general "GameFace
+// never matches compound selectors" rule, just an isolated repro for this file/class pair). This
+// rule relies on plain CSS source order between two independent single-class rules instead -
+// must stay textually after .btn_base above to win the (equal-specificity) cascade.
+.btn_right {
+  background: rgba(74, 144, 217, 0.15);
+}
+
+.svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  overflow: hidden;
+  color: #bbb;
+}

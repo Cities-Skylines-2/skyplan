@@ -11,9 +11,10 @@ interface SkyplanCtx {
 	allLayers: LayerDef[];
 	globalLabelStyle: LabelStyle;
 	viewMode: boolean;
-	toolbarPos: { left: number; top: number } | null;
-	onToolbarPosChange: (pos: { left: number; top: number }) => void;
 	onViewModeToggle: () => void;
+	showWhatsNew: boolean;
+	onOpenWhatsNew: () => void;
+	onCloseWhatsNew: () => void;
 	onToolChange: (t: ToolId | null) => void;
 	onLayerChange: (l: LayerDef | null) => void;
 	onUndo: () => void;
@@ -44,7 +45,7 @@ export const SkyplanProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	const [activeTool, setActiveTool] = useState<ToolId | null>('path');
 	const [activeLayer, setActiveLayer] = useState<LayerDef | null>(null);
 	const [viewMode, setViewMode] = useState(false);
-	const [toolbarPos, setToolbarPos] = useState<{ left: number; top: number } | null>(null);
+	const [showWhatsNew, setShowWhatsNew] = useState(false);
 
 	const visibleLayers = activeTool ? layerConfig.layers.filter(l => l.allowedTools.includes(activeTool)) : [];
 
@@ -97,6 +98,8 @@ export const SkyplanProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	const onUndo = useCallback(() => trigger('skyplan', 'undo', ''), []);
 	const onRedo = useCallback(() => trigger('skyplan', 'redo', ''), []);
 	const onViewModeToggle = useCallback(() => setViewMode(v => !v), []);
+	const onOpenWhatsNew = useCallback(() => setShowWhatsNew(true), []);
+	const onCloseWhatsNew = useCallback(() => setShowWhatsNew(false), []);
 
 	const value: SkyplanCtx = {
 		visible,
@@ -106,9 +109,10 @@ export const SkyplanProvider: React.FC<{ children: React.ReactNode }> = ({ child
 		allLayers: layerConfig.layers,
 		globalLabelStyle: layerConfig.labelStyle ?? {},
 		viewMode,
-		toolbarPos,
-		onToolbarPosChange: setToolbarPos,
 		onViewModeToggle,
+		showWhatsNew,
+		onOpenWhatsNew,
+		onCloseWhatsNew,
 		onToolChange,
 		onLayerChange,
 		onUndo,
