@@ -25,6 +25,7 @@ const SkyplanOverlayInner: React.FC = () => {
 					headerExtra={
 						<button onClick={onOpenWhatsNew} className={`${panelStyles.btn_base} ${panelStyles.btn_right}`}>
 							<FontAwesomeIcon icon={faCircleQuestion} className={panelStyles.svg} />
+							<span className={panelStyles.tooltip}>What's New</span>
 						</button>
 					}
 				>

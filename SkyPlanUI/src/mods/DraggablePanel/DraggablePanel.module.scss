@@ -39,6 +39,7 @@
   cursor: pointer;
   font-size: var(--skyplan-font-size-lg);
   font-weight: 600;
+  position: relative;
   background: transparent;
 
   &:hover {
@@ -49,14 +50,39 @@
       color: #fff;
     }
   }
+
+  .tooltip {
+    z-index: 1;
+    position: absolute;
+    top: 100%;
+    margin-top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18,18,18,0.95);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 2px;
+    padding: 4px 8px;
+    font-size: var(--skyplan-font-size-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .tooltip {
+    opacity: 1;
+  }
 }
 
-// Deliberately a separate top-level rule, not `&.btn_right` nested inside .btn_base: GameFace
-// doesn't match compound class selectors (two classes AND-ed on one element, e.g. `.a.b{}`) even
-// when both classes are genuinely present on the element - confirmed 2026-09-12 (hover, a single
-// class + pseudo-class, worked fine; the compound `.btn_base.btn_right` never applied). Relying on
-// plain CSS source order between two independent single-class rules instead - this one must stay
-// textually after .btn_base above so it wins the (equal-specificity) cascade.
+// Deliberately a separate top-level rule, not `&.btn_right` nested inside .btn_base: in this one
+// specific case, `.btn_base.btn_right { }` (the compound selector `&.btn_right` compiles to)
+// silently never applied even with both classes genuinely present on the element - confirmed
+// 2026-09-12 (hover, a single class + pseudo-class, worked fine; only the compound AND failed).
+// Root cause not fully isolated (the identical nested-modifier pattern works fine elsewhere in
+// this codebase, e.g. Toolbar.module.scss's `.btn_active` - so this isn't a general "GameFace
+// never matches compound selectors" rule, just an isolated repro for this file/class pair). This
+// rule relies on plain CSS source order between two independent single-class rules instead -
+// must stay textually after .btn_base above to win the (equal-specificity) cascade.
 .btn_right {
   background: rgba(74, 144, 217, 0.15);
 }
